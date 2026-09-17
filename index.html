@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fortune Rabbit - Teste</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .caixa {
+      max-width: 400px;
+      margin: 30px auto;
+      padding: 25px;
+      background: #222;
+      border-radius: 15px;
+    }
+
+    input {
+      width: 90%;
+      padding: 14px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      width: 95%;
+      padding: 14px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .criar {
+      background: #20c997;
+      color: white;
+    }
+
+    .entrar {
+      background: #007bff;
+      color: white;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      font-size: 18px;
+      word-break: break-word;
+    }
+
+    .codigo {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🐰 Fortune Rabbit</h1>
+  <p>Teste de salas online</p>
+
+  <div class="caixa">
+
+    <button class="criar" onclick="criarSala()">
+      🟢 Criar sala
+    </button>
+
+    <hr>
+
+    <input
+      id="nome"
+      type="text"
+      placeholder="Seu nome"
+    >
+
+    <input
+      id="codigo"
+      type="text"
+      placeholder="Código da sala"
+      maxlength="6"
+    >
+
+    <button class="entrar" onclick="entrarSala()">
+      🔵 Entrar na sala
+    </button>
+
+    <div id="resultado"></div>
+
+  </div>
+
+  <script>
+
+    const SERVIDOR = "https://fortune-rabbit.onrender.com";
+
+    async function criarSala() {
+
+      const resultado = document.getElementById("resultado");
+
+      resultado.innerHTML = "Criando sala...";
+
+      try {
+
+        const resposta = await fetch(`${SERVIDOR}/salas`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        const dados = await resposta.json();
+
+        if (dados.sucesso) {
+
+          document.getElementById("codigo").value = dados.codigo;
+
+          resultado.innerHTML = `
+            <div>Sala criada!</div>
+            <div class="codigo">${dados.codigo}</div>
+            <div>Envie esse código para os outros jogadores.</div>
+          `;
+
+        } else {
+
+          resultado.innerHTML = "Erro ao criar sala.";
+
+        }
+
+      } catch (erro) {
+
+        resultado.innerHTML =
+          "Não foi possível conectar ao servidor.";
+
+        console.error(erro);
+      }
+    }
+
+
+    async function entrarSala() {
+
+      const nome = document.getElementById("nome").value;
+      const codigo = document.getElementById("codigo").value.toUpperCase();
+
+      const resultado = document.getElementById("resultado");
+
+      if (!nome) {
+        resultado.innerHTML = "Digite seu nome.";
+        return;
+      }
+
+      if (!codigo) {
+        resultado.innerHTML = "Digite o código da sala.";
+        return;
+      }
+
+      resultado.innerHTML = "Entrando na sala...";
+
+      try {
+
+        const resposta = await fetch(
+          `${SERVIDOR}/salas/${codigo}/entrar`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              nome: nome
+            })
+          }
+        );
+
+        const dados = await resposta.json();
+
+        if (dados.sucesso) {
+
+          resultado.innerHTML = `
+            <div>Você entrou na sala!</div>
+            <div class="codigo">${codigo}</div>
+            <div>Jogadores: ${dados.sala.jogadores.length}</div>
+          `;
+
+        } else {
+
+          resultado.innerHTML =
+            dados.mensagem || "Erro ao entrar na sala.";
+
+        }
+
+      } catch (erro) {
+
+        resultado.innerHTML =
+          "Não foi possível conectar ao servidor.";
+
+        console.error(erro);
+      }
+    }
+
+  </script>
+
+</body>
+  </html>
