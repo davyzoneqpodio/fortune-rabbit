@@ -1,10 +1,13 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use(express.static(path.join(__dirname)));
 
 const PORT = process.env.PORT || 3000;
 
@@ -13,11 +16,7 @@ const salas = {};
 
 // Página inicial
 app.get("/", (req, res) => {
-  res.json({
-    status: "online",
-    jogo: "Fortune Rabbit",
-    mensagem: "Servidor funcionando!"
-  });
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 // Criar uma sala
@@ -82,3 +81,4 @@ app.get("/salas/:codigo", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Fortune Rabbit rodando na porta ${PORT}`);
 });
+  
